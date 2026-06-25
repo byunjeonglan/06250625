@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>한국 음식 궁합 스마트 도우미</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Pretendard', sans-serif; }
+    </style>
+</head>
+<body class="bg-stone-50 min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-lg border border-stone-100">
+        <h1 class="text-3xl font-bold text-stone-800 mb-2 text-center">오늘의 음식 궁합</h1>
+        <p class="text-stone-500 text-center mb-8 text-sm">먹고 싶은 음식을 입력하면 완벽한 조합을 추천해드려요.</p>
+        
+        <div class="flex gap-2 mb-6">
+            <input 
+                type="text" 
+                id="foodInput" 
+                placeholder="음식 이름 입력 (예: 삼겹살, 냉면, 비빔밥)" 
+                class="flex-1 border border-stone-200 bg-stone-50 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-500 transition"
+            >
+            <button 
+                onclick="recommendFood()" 
+                class="bg-stone-800 text-white px-6 py-3 rounded-xl font-semibold hover:bg-stone-900 transition active:scale-95"
+            >
+                추천받기
+            </button>
+        </div>
+
+        <div id="resultArea" class="hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-bold text-stone-700" id="resultTitle">추천 조합:</h2>
+                <span class="text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded-md font-medium">BEST 5</span>
+            </div>
+            <ul id="recommendList" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></ul>
+        </div>
+
+        <div id="noResult" class="hidden text-center py-8">
+            <div class="text-4xl mb-2">🤔</div>
+            <p class="text-stone-600 font-medium">해당 음식의 궁합 정보를 찾을 수 없어요.</p>
+            <p class="text-stone-400 text-sm mt-1">다른 메뉴를 입력해보시겠어요?</p>
+        </div>
+    </div>
+
+    <script>
+        // 대폭 확장된 한국 음식 데이터베이스
+        const foodDB = {
+            "삼겹살": ["상추", "깻잎", "마늘", "쌈장", "파채"],
+            "돼지고기": ["새우젓", "표고버섯", "마늘", "양파", "부추"],
+            "소고기": ["배", "깻잎", "양파", "무", "마늘"],
+            "불고기": ["상추", "깻잎", "마늘", "양파", "파채"],
+            "닭갈비": ["깻잎", "쌈무", "우동사리", "치즈", "양배추"],
+            "치킨": ["치킨무", "맥주", "콜라", "샐러드", "양념소스"],
+            "라면": ["김치", "단무지", "계란", "파", "밥"],
+            "비빔밥": ["고추장", "콩나물국", "참기름", "계란후라이", "시금치"],
+            "칼국수": ["겉절이", "만두", "다대기", "파전", "고추지"],
+            "냉면": ["식초", "겨자", "만두", "갈비", "열무김치"],
+            "김치찌개": ["계란말이", "김", "흰쌀밥", "두부부침", "스팸"],
+            "된장찌개": ["고등어구이", "나물무침", "멸치볶음", "계란찜", "밥"],
+            "감자": ["치즈", "우유", "양파", "버터", "베이컨"],
+            "감자떡": ["팥", "콩가루", "우유", "꿀", "식혜"],
+            "고구마": ["김치", "우유", "사과", "동치미", "플레인요거트"],
+            "전": ["막걸리", "양파간장", "동동주", "김치", "무침"],
+            "떡볶이": ["튀김", "순대", "어묵국물", "삶은계란", "쿨피스"],
+            "수육": ["보쌈김치", "새우젓", "마늘", "고추", "배추속대"]
+        };
+
+        function recommendFood() {
+            const input = document.getElementById('foodInput').value.trim();
+            const list = document.getElementById('recommendList');
+            const resultArea = document.getElementById('resultArea');
+            const noResult = document.getElementById('noResult');
+            const resultTitle = document.getElementById('resultTitle');
+
+            list.innerHTML = "";
+            resultArea.classList.add('hidden');
+            noResult.classList.add('hidden');
+
+            if (!input) return;
+
+            const normalize = (str) => str.replace(/\s+/g, '').toLowerCase();
+            const normalizedInput = normalize(input);
+
+            // 검색: 정확히 일치하거나, 단어가 포함되는 항목을 찾음
+            let matchedKey = null;
+            for (let key in foodDB) {
+                if (normalize(key).includes(normalizedInput) || normalizedInput.includes(normalize(key))) {
+                    matchedKey = key;
+                    break;
+                }
+            }
+
+            if (matchedKey) {
+                resultTitle.textContent = `'${matchedKey}'와(과) 잘 어울리는 조합`;
+                foodDB[matchedKey].forEach(item => {
+                    const li = document.createElement('li');
+                    li.className = "bg-stone-100 text-stone-700 px-4 py-3 rounded-lg font-medium shadow-sm border border-stone-200 flex items-center justify-center hover:bg-stone-200 transition";
+                    li.textContent = item;
+                    list.appendChild(li);
+                });
+                resultArea.classList.remove('hidden');
+            } else {
+                noResult.classList.remove('hidden');
+            }
+        }
+
+        document.getElementById('foodInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') recommendFood();
+        });
+    </script>
+</body>
+</html>
